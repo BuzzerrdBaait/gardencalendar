@@ -6,11 +6,28 @@
      <meta charset="UTF-8">
      <meta name="viewport" content="width=device-width, initial-scale=1.0">
      <title>Garden_App</title>
+
+     
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css.css' %}">
+
 </head>
 
 <body>
 
      <h1>Welcome home partner!</h1>
+
+     {% if request.user.is_authenticated %}
+
+
+     <form method="post" action="{% url 'logout' %}">
+          {% csrf_token %}
+          <button type="submit">logout</button>
+      </form>
+
+     {%endif%}
+
+
      
 </body>
 </html>
