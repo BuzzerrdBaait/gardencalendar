@@ -102,7 +102,7 @@ def register(request):
 
                 registration_link = request.build_absolute_uri(
 
-                    reverse('authenticate_user', args=[str(new_user.authentication_link)])
+                    reverse('gardencalendar:authenticate_user', args=[str(new_user.authentication_link)])
 
                 )
 
@@ -125,30 +125,9 @@ def register(request):
                 )
 
             except:
-               
-               registration_link = request.build_absolute_uri(
-
-                    reverse('gardencalendar:authenticate_user', args=[str(new_user.authentication_link)])
-
-                )
-
-               print(f"\n\nyour registration link is --->  {registration_link} <---\n\n")
-
                 
-
-               send_mail(
-
-                    f"Welcome {new_user.username}",
-
-                    f"Welcome to the Garden buddy!!\n\n Here is how to get registered:\n\nBelow is your authentication key.\n\ncopy this:\n\n{new_user.authentication_key} \n\nClick the link below to complete your registration:\n\n{registration_link}",
-
-                    "admin@ilovecookbooks.org",
-
-                    [new_user.email],
-
-                    fail_silently=False,
-
-                )
+                print("Sending email failed for some reason. :'(")
+               
 
             return redirect('gardencalendar:login')
 
