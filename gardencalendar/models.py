@@ -16,7 +16,6 @@ from django.contrib.auth.models import AbstractUser
 
 
 
-
 class User_Profile(AbstractUser):
 
     email = models.CharField(max_length=40, blank=True, null=True, unique=True)
@@ -28,6 +27,8 @@ class User_Profile(AbstractUser):
     user_image = models.ImageField(upload_to='user_images/', blank=True, null=True)
 
     user_library = models.CharField(max_length=255, default='', blank=True)
+
+    authentication_link = models.CharField(max_length=50, blank=True, null=True)
 
 
 
@@ -47,10 +48,6 @@ class User_Profile(AbstractUser):
 
 
 
-    authentication_link = models.CharField(max_length=50, blank=True, null=True)
-
-
-
     def save(self, *args, **kwargs):
 
         if not self.authentication_key:
@@ -62,6 +59,7 @@ class User_Profile(AbstractUser):
             self.authentication_link = self.generate_unique_link()
 
         super().save(*args, **kwargs)
+
 
 
 class Task(models.Model):
@@ -77,26 +75,32 @@ class Task(models.Model):
     def save(self, *args, **kwargs):
 
         if not self.pk:
+            
+            super().save(*args, **kwargs)
 
-            task_count = Task.objects.filter(plant=self.plant).count() + 1
+            self.plant.tasks.add(self)
 
-            self.description = f"Task {task_count} for {self.plant.name}"
-
-        super().save(*args, **kwargs)
-
-
-
-        # Update the plant's tasks field
-
-        self.plant.tasks.add(self)
-
-        self.plant.save()
+            self.plant.save()
 
 
 
     def __str__(self):
 
         return f"Task for {self.plant.name} - {self.description}"
+
+
+
+class GeneralTask(models.Model):
+
+    description = models.TextField(default='no description available')
+
+    frequency = models.DurationField(default=timedelta(days=1))
+
+
+
+    def __str__(self):
+
+        return self.description
 
 
 
@@ -111,6 +115,8 @@ class Garden(models.Model):
     plants = models.ManyToManyField('Plant', related_name='gardens', blank=True)
 
     user_tasks = models.ManyToManyField('UserTask', related_name='gardens', blank=True)
+
+    general_tasks = models.ManyToManyField(GeneralTask, related_name='gardens', blank=True)
 
 
 
@@ -140,31 +146,21 @@ class GrowthStage(models.Model):
 
     growing_time = models.DurationField(default=timedelta(days=1))
 
-
-
+    
     def save(self, *args, **kwargs):
 
         if not self.pk:
+            
+            super().save(*args, **kwargs)
 
-            growth_stage_count = GrowthStage.objects.filter(plant=self.plant).count() + 1
+            self.plant.growth_stages.add(self)
 
-            self.description = f"Growth Stage {growth_stage_count} of {self.plant.name}"
-
-        super().save(*args, **kwargs)
-
-        
-
-        # Update the plant's growth_stages field
-
-        self.plant.growth_stages.add(self)
-
-        self.plant.save()
-
+            self.plant.save()
 
 
     def __str__(self):
 
-        return f"{self.plant.name} - Growth Stage: {self.description}"
+        return f"{self.description}"
 
 
 
@@ -190,7 +186,8 @@ class UserTask(models.Model):
 
     user = models.ForeignKey(User_Profile, on_delete=models.CASCADE)
 
-    plant = models.ForeignKey(Plant, on_delete=models.CASCADE, related_name='user_tasks')
+    garden = models.ForeignKey(Garden, on_delete=models.CASCADE, related_name='tasks')
+
 
     description = models.TextField(blank=True, null=True)
 
@@ -203,12 +200,12 @@ class UserTask(models.Model):
     def save(self, *args, **kwargs):
 
         if not self.pk:
+            
+            super().save(*args, **kwargs)
+            self.garden.user_tasks.add(self)
 
-            user_task_count = UserTask.objects.filter(user=self.user, plant=self.plant).count() + 1
+            self.garden.save()
 
-            self.description = f"Task {user_task_count} for {self.plant.name}"
-
-        super().save(*args, **kwargs)
 
 
 
@@ -218,36 +215,39 @@ class UserTask(models.Model):
 
 
 
+
+
+"""I TOOK THIS CODE OUT BECAUSE... the models have fields which connect them now. I think that is a better way to do this and the 
+
+@ receiver function is for when models have fields that don't relate. It lets another model recognize that a change took place.
+
+I want to keep this in here incase I want to reference it later. 
+
+
 @receiver(post_save, sender=Task)
 
-@receiver(post_save, sender=GrowthStage)
 
-def update_plant_growth_stages(sender, instance, **kwargs):
-
-    if isinstance(instance, (Task, GrowthStage)):
-
-        instance.plant.save()
+@receiver(post_save, sender=UserTask)
 
 
+def update_garden_tasks(sender, instance, **kwargs):
+
+    if isinstance(instance, (Task, UserTask)):
+
+        if hasattr(instance, 'garden'):
+
+            instance.garden.tasks.add(instance)
+
+            instance.garden.save()
+
+        elif hasattr(instance, 'plant'):
+
+                instance.plant.tasks.add(instance)
+
+                instance.plant.save()
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+"""
 
 
 """

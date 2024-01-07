@@ -1,8 +1,39 @@
 
-
 from django.contrib import admin
 
-from .models import Task, Garden, GrowthStage, Plant, UserTask
+from .models import User_Profile, Task, GeneralTask, Garden, GrowthStage, Plant, UserTask
+
+
+
+# Customizing ModelAdmin classes
+
+@admin.register(UserTask)
+
+class UserTaskAdmin(admin.ModelAdmin):
+
+    list_display = ['user', 'garden', 'description', 'frequency', 'start_date']
+
+
+
+    def get_queryset(self, request):
+
+        qs = super().get_queryset(request)
+
+        if request.user.is_superuser:
+
+            return qs
+
+        return qs.filter(user=request.user)
+    
+
+
+
+
+@admin.register(User_Profile)
+
+class User_ProfileAdmin(admin.ModelAdmin):
+
+    list_display = ['username', 'email', 'is_staff', 'is_superuser', 'is_active']
 
 
 
@@ -10,7 +41,15 @@ from .models import Task, Garden, GrowthStage, Plant, UserTask
 
 class TaskAdmin(admin.ModelAdmin):
 
-    list_display = ('plant', 'description', 'frequency')
+    list_display = ['plant', 'description', 'frequency']
+
+
+
+@admin.register(GeneralTask)
+
+class GeneralTaskAdmin(admin.ModelAdmin):
+
+    list_display = ['description', 'frequency']
 
 
 
@@ -18,7 +57,19 @@ class TaskAdmin(admin.ModelAdmin):
 
 class GardenAdmin(admin.ModelAdmin):
 
-    list_display = ('user', 'name', 'zip_code')
+    list_display = ['user', 'name', 'zip_code']
+
+
+
+    def get_queryset(self, request):
+
+        qs = super().get_queryset(request)
+
+        if request.user.is_superuser:
+
+            return qs
+
+        return qs.filter(user=request.user)
 
 
 
@@ -26,7 +77,7 @@ class GardenAdmin(admin.ModelAdmin):
 
 class GrowthStageAdmin(admin.ModelAdmin):
 
-    list_display = ('plant', 'description', 'growing_time')
+    list_display = ['plant', 'description', 'growing_time']
 
 
 
@@ -34,12 +85,5 @@ class GrowthStageAdmin(admin.ModelAdmin):
 
 class PlantAdmin(admin.ModelAdmin):
 
-    list_display = ('name', 'description')
+    list_display = ['name', 'description']
 
-
-
-@admin.register(UserTask)
-
-class UserTaskAdmin(admin.ModelAdmin):
-
-    list_display = ('user', 'plant', 'description', 'frequency', 'start_date')
