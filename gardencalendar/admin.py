@@ -1,18 +1,45 @@
+
+
 from django.contrib import admin
 
-from .models import *
+from .models import Task, Garden, GrowthStage, Plant, UserTask
 
 
 
-class User_Profile_Admin(admin.ModelAdmin):
+@admin.register(Task)
 
-    list_display = ('username','email','date_joined','is_verified','user_image','id')
+class TaskAdmin(admin.ModelAdmin):
 
-    search_fields = ('username', 'date_joined', 'is_verified')
-
-    prepopulated_fields = {'username': ('username',)}
+    list_display = ('plant', 'description', 'frequency')
 
 
 
+@admin.register(Garden)
 
-admin.site.register(User_Profile, User_Profile_Admin)
+class GardenAdmin(admin.ModelAdmin):
+
+    list_display = ('user', 'name', 'zip_code')
+
+
+
+@admin.register(GrowthStage)
+
+class GrowthStageAdmin(admin.ModelAdmin):
+
+    list_display = ('plant', 'description', 'growing_time')
+
+
+
+@admin.register(Plant)
+
+class PlantAdmin(admin.ModelAdmin):
+
+    list_display = ('name', 'description')
+
+
+
+@admin.register(UserTask)
+
+class UserTaskAdmin(admin.ModelAdmin):
+
+    list_display = ('user', 'plant', 'description', 'frequency', 'start_date')

@@ -1,25 +1,25 @@
 import secrets
+
 import string
-from django.contrib.auth.models import AbstractUser, Group, Permission
+
 from django.db import models
 
-
-
 from django.utils import timezone
-from django.db.models.signals import pre_delete
+
+from datetime import timedelta
+
+from django.db.models.signals import post_save
+
 from django.dispatch import receiver
 
+from django.contrib.auth.models import AbstractUser
 
 
-"""
-I will go back and put some foreign keys into the user profile. This is just a base user model extended and we need to migrate first then we can edit it how we want.
-
-"""
 
 
 class User_Profile(AbstractUser):
-    
-    email= models.CharField(max_length=40,blank=True,null=True, unique=True)
+
+    email = models.CharField(max_length=40, blank=True, null=True, unique=True)
 
     authentication_key = models.CharField(max_length=50, unique=True)
 
@@ -30,10 +30,6 @@ class User_Profile(AbstractUser):
     user_library = models.CharField(max_length=255, default='', blank=True)
 
 
-
-    """
-    AUTHENTICATION LINK CODE
-    """
 
     def generate_unique_link(self):
 
@@ -48,9 +44,11 @@ class User_Profile(AbstractUser):
         link = link.replace('"', str(secrets.randbelow(1000)))
 
         return link
-    
+
+
 
     authentication_link = models.CharField(max_length=50, blank=True, null=True)
+
 
 
     def save(self, *args, **kwargs):
@@ -59,13 +57,193 @@ class User_Profile(AbstractUser):
 
             self.authentication_key = ''.join(secrets.choice(string.ascii_letters + string.digits + string.punctuation) for _ in range(30))
 
-
         if not self.authentication_link:
 
             self.authentication_link = self.generate_unique_link()
 
+        super().save(*args, **kwargs)
+
+
+class Task(models.Model):
+
+    plant = models.ForeignKey('Plant', on_delete=models.CASCADE, related_name='plant_tasks')
+
+    description = models.TextField(default='no description available')
+
+    frequency = models.DurationField(default=timedelta(days=1))
+
+
+
+    def save(self, *args, **kwargs):
+
+        if not self.pk:
+
+            task_count = Task.objects.filter(plant=self.plant).count() + 1
+
+            self.description = f"Task {task_count} for {self.plant.name}"
 
         super().save(*args, **kwargs)
+
+
+
+        # Update the plant's tasks field
+
+        self.plant.tasks.add(self)
+
+        self.plant.save()
+
+
+
+    def __str__(self):
+
+        return f"Task for {self.plant.name} - {self.description}"
+
+
+
+class Garden(models.Model):
+
+    user = models.ForeignKey(User_Profile, on_delete=models.CASCADE, related_name='gardens')
+
+    name = models.CharField(max_length=50)
+
+    zip_code = models.CharField(max_length=10)
+
+    plants = models.ManyToManyField('Plant', related_name='gardens', blank=True)
+
+    user_tasks = models.ManyToManyField('UserTask', related_name='gardens', blank=True)
+
+
+
+    def save(self, *args, **kwargs):
+
+        if not self.pk:
+
+            garden_count = Garden.objects.filter(user=self.user).count() + 1
+
+            self.name = f"Garden {garden_count} - {self.name}"
+
+        super().save(*args, **kwargs)
+
+
+
+    def __str__(self):
+
+        return self.name
+
+
+
+class GrowthStage(models.Model):
+
+    plant = models.ForeignKey('Plant', on_delete=models.CASCADE, related_name='plant_growth_stages')
+
+    description = models.TextField()
+
+    growing_time = models.DurationField(default=timedelta(days=1))
+
+
+
+    def save(self, *args, **kwargs):
+
+        if not self.pk:
+
+            growth_stage_count = GrowthStage.objects.filter(plant=self.plant).count() + 1
+
+            self.description = f"Growth Stage {growth_stage_count} of {self.plant.name}"
+
+        super().save(*args, **kwargs)
+
+        
+
+        # Update the plant's growth_stages field
+
+        self.plant.growth_stages.add(self)
+
+        self.plant.save()
+
+
+
+    def __str__(self):
+
+        return f"{self.plant.name} - Growth Stage: {self.description}"
+
+
+
+class Plant(models.Model):
+
+    name = models.CharField(max_length=50)
+
+    description = models.TextField(default='no description available')
+
+    growth_stages = models.ManyToManyField(GrowthStage, related_name='plants', blank=True)
+
+    tasks = models.ManyToManyField(Task, related_name='plants', blank=True)
+
+
+
+    def __str__(self):
+
+        return self.name
+
+
+
+class UserTask(models.Model):
+
+    user = models.ForeignKey(User_Profile, on_delete=models.CASCADE)
+
+    plant = models.ForeignKey(Plant, on_delete=models.CASCADE, related_name='user_tasks')
+
+    description = models.TextField(blank=True, null=True)
+
+    frequency = models.DurationField(default=timedelta(days=1))
+
+    start_date = models.DateField(default=timezone.now())
+
+
+
+    def save(self, *args, **kwargs):
+
+        if not self.pk:
+
+            user_task_count = UserTask.objects.filter(user=self.user, plant=self.plant).count() + 1
+
+            self.description = f"Task {user_task_count} for {self.plant.name}"
+
+        super().save(*args, **kwargs)
+
+
+
+    def __str__(self):
+
+        return f"{self.user.username}'s Task - {self.description}"
+
+
+
+@receiver(post_save, sender=Task)
+
+@receiver(post_save, sender=GrowthStage)
+
+def update_plant_growth_stages(sender, instance, **kwargs):
+
+    if isinstance(instance, (Task, GrowthStage)):
+
+        instance.plant.save()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

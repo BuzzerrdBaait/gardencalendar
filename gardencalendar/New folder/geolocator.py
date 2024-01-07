@@ -70,6 +70,8 @@ if coords:
     location_info=coords[2].split(",")
     city_state=f"{location_info[0]}, {location_info[3]}"
     credit=coords[3]
+    x=coords[0]
+    y=[coords[1]]
 
     print(f"Your location is {city_state}")
        
