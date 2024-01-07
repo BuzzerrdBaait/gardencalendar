@@ -62,7 +62,7 @@ class User_Profile(AbstractUser):
 
 
 
-class Task(models.Model):
+class Plant_specific_task(models.Model):
 
     plant = models.ForeignKey('Plant', on_delete=models.CASCADE, related_name='plant_tasks')
 
@@ -119,19 +119,6 @@ class Garden(models.Model):
     general_tasks = models.ManyToManyField(GeneralTask, related_name='gardens', blank=True)
 
 
-
-    def save(self, *args, **kwargs):
-
-        if not self.pk:
-
-            garden_count = Garden.objects.filter(user=self.user).count() + 1
-
-            self.name = f"Garden {garden_count} - {self.name}"
-
-        super().save(*args, **kwargs)
-
-
-
     def __str__(self):
 
         return self.name
@@ -142,9 +129,15 @@ class GrowthStage(models.Model):
 
     plant = models.ForeignKey('Plant', on_delete=models.CASCADE, related_name='plant_growth_stages')
 
-    description = models.TextField()
+    growth_stages=models.CharField(default='Name of growth stage', max_length=50)
 
-    growing_time = models.DurationField(default=timedelta(days=1))
+    description = models.TextField(blank=True, null=True)
+
+    min_time_in_days = models.DurationField(default=timedelta(days=1))
+
+    max_time_in_days = models.DurationField(default=timedelta(days=2))
+
+
 
     
     def save(self, *args, **kwargs):
@@ -172,7 +165,7 @@ class Plant(models.Model):
 
     growth_stages = models.ManyToManyField(GrowthStage, related_name='plants', blank=True)
 
-    tasks = models.ManyToManyField(Task, related_name='plants', blank=True)
+    tasks = models.ManyToManyField(Plant_specific_task, related_name='plants', blank=True)
 
 
 

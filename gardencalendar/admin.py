@@ -1,17 +1,15 @@
-
 from django.contrib import admin
 
-from .models import User_Profile, Task, GeneralTask, Garden, GrowthStage, Plant, UserTask
+from .models import *
 
 
 
-# Customizing ModelAdmin classes
 
 @admin.register(UserTask)
 
 class UserTaskAdmin(admin.ModelAdmin):
 
-    list_display = ['user', 'garden', 'description', 'frequency', 'start_date']
+    list_display = ['garden', 'description', 'frequency', 'start_date']
 
 
 
@@ -24,8 +22,6 @@ class UserTaskAdmin(admin.ModelAdmin):
             return qs
 
         return qs.filter(user=request.user)
-    
-
 
 
 
@@ -37,9 +33,9 @@ class User_ProfileAdmin(admin.ModelAdmin):
 
 
 
-@admin.register(Task)
+@admin.register(Plant_specific_task)
 
-class TaskAdmin(admin.ModelAdmin):
+class Plant_specific_taskAdmin(admin.ModelAdmin):
 
     list_display = ['plant', 'description', 'frequency']
 
@@ -77,7 +73,7 @@ class GardenAdmin(admin.ModelAdmin):
 
 class GrowthStageAdmin(admin.ModelAdmin):
 
-    list_display = ['plant', 'description', 'growing_time']
+    list_display = ['plant', 'description', 'min_time_in_days', 'max_time_in_days']
 
 
 
@@ -86,4 +82,16 @@ class GrowthStageAdmin(admin.ModelAdmin):
 class PlantAdmin(admin.ModelAdmin):
 
     list_display = ['name', 'description']
+
+
+
+    def get_queryset(self, request):
+
+        qs = super().get_queryset(request)
+
+        if request.user.is_superuser:
+
+            return qs
+
+        return qs.filter(growth_stages__plant__user=request.user, tasks__plant__user=request.user)
 
