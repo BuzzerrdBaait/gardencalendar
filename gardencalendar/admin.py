@@ -5,6 +5,20 @@ from .models import *
 
 
 
+class PlantInGardenAdmin(admin.ModelAdmin):
+
+    list_display = ('plant', 'garden','quantity', 'added_at', 'min_completion', 'max_completion', 'display_growth_phase_info')
+
+
+    #had to make a custom method because django doesn't support JSON on the admin page.
+    def display_growth_phase_info(self, obj):
+
+        return str(obj.growth_phase_info)
+
+
+
+admin.site.register(PlantInGarden, PlantInGardenAdmin)
+
 @admin.register(UserTask)
 
 class UserTaskAdmin(admin.ModelAdmin):
@@ -53,7 +67,7 @@ class GeneralTaskAdmin(admin.ModelAdmin):
 
 class GardenAdmin(admin.ModelAdmin):
 
-    list_display = ['user', 'name', 'zip_code']
+    list_display = ['user', 'name', 'zip_code','city_state','x_coord','y_coord','spring_frost','fall_frost','season_length']
 
 
 
@@ -73,7 +87,11 @@ class GardenAdmin(admin.ModelAdmin):
 
 class GrowthStageAdmin(admin.ModelAdmin):
 
-    list_display = ['plant', 'description', 'min_time_in_days', 'max_time_in_days']
+    list_display = ['plant', 'growth_stages','description','min_time_of_start_within_the_cycle','max_time_of_start_within_the_cycle', 'min_length_in_days', 'max_length_in_days']
+
+
+
+
 
 
 
