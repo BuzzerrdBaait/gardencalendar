@@ -169,23 +169,29 @@ class Garden(models.Model):
 
             html_content = scrape(url_to_scrape)
 
-
-
             if html_content:
 
                 clean_data(html_content)
 
                 # Update the Garden model fields with the scraped information if the corresponding field is set to "leave blank"
+                try:
 
-                self.city_state = self.city_state if self.city_state != 'leave blank' else frost_info[0]
+                    self.city_state = city_state
 
-                self.spring_frost = self.spring_frost if self.spring_frost != 'leave blank' else frost_info[2]
+                    self.spring_frost = frost_info[2]
 
-                self.fall_frost = self.fall_frost if self.fall_frost != 'leave blank' else frost_info[3]
+                    self.fall_frost = frost_info[3]
 
-                self.season_length = self.season_length if self.season_length != 'leave blank' else frost_info[4]
+                    self.season_length = frost_info[4]
 
+                except:
+                    self.city_state="Something went wrong"
 
+                    self.spring_frost="Something went wrong"
+
+                    self.fall_frost= "Somethign went wrong"
+
+                    self.season_length= "Something went wrong"
 
         super().save(*args, **kwargs)
     
@@ -213,7 +219,6 @@ class PlantInGarden(models.Model):
     growth_phase_info = models.JSONField(default=dict, blank=True)
 
 
-
     def calculate_completion_dates(self):
 
         # Calculate min and max completion based on related Plant model
@@ -226,13 +231,9 @@ class PlantInGarden(models.Model):
 
         self.max_completion = self.added_at + max_growth_time
 
-
-
         # Calculate min and max growth phase end based on GrowthStage model
 
         growth_phase_info = {}
-
-
 
         for stage in self.plant.growth_stages.all():
 
@@ -242,8 +243,6 @@ class PlantInGarden(models.Model):
 
             json_title=f"{stage.pk} {stage.growth_stages}"
 
-
-
             growth_phase_info[json_title] = {
 
                 'min_growth_phase_end': min_growth_end.strftime('%Y-%m-%d %H:%M:%S'),
@@ -252,11 +251,7 @@ class PlantInGarden(models.Model):
 
             }
 
-
-
         return growth_phase_info
-
-
 
     def save(self, *args, **kwargs):
 
@@ -282,9 +277,6 @@ class GrowthStage(models.Model):
     min_length_in_days = models.DurationField(default='0 00:00:00', blank=True)
 
     max_length_in_days = models.DurationField(default='0 00:00:00', blank=True)
-
-
-
     
     def save(self, *args, **kwargs):
 
@@ -331,14 +323,11 @@ class UserTask(models.Model):
 
     garden = models.ForeignKey(Garden, on_delete=models.CASCADE, related_name='tasks')
 
-
     description = models.TextField(blank=True, null=True)
 
     frequency = models.DurationField(default=timedelta(days=1))
 
     start_date = models.DateField(default=timezone.now())
-
-
 
     def save(self, *args, **kwargs):
 
@@ -348,9 +337,6 @@ class UserTask(models.Model):
             self.garden.user_tasks.add(self)
 
             self.garden.save()
-
-
-
 
     def __str__(self):
 
