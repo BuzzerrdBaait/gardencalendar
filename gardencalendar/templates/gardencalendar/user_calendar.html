@@ -3,63 +3,60 @@
 <html lang="en">
 
 <head>
-     {% load static %}
 
-<meta charset="UTF-8">
+    {% load static %}
 
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
 
-<title>Dynamic Calendar</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+    <title>Dynamic Calendar</title>
 
+    {{month_info}}
 
-{{month_info}}
+    <style>
 
+        table {
 
+            border-collapse: collapse;
 
-<style>
+            width: 100%;
 
-    table {
+        }
 
-        border-collapse: collapse;
+        th, td {
 
-        width: 100%;
+            border: 1px solid black;
 
-    }
+            padding: 8px;
 
-    th, td {
+            text-align: center;
 
-        border: 1px solid black;
+        }
 
-        padding: 8px;
+        .month-year {
 
-        text-align: center;
+            text-align: center;
 
-    }
+            font-size: 1.2em;
 
-</style>
+            margin-bottom: 10px;
+
+        }
+
+    </style>
 
 </head>
 
 <body>
 
-
-
-
-
 <form>
 
-    <label for="input1">Input 1 (Number of blank cells):</label>
+    <input type="button" value="Previous Month" onclick="previousMonth()">
 
-    <input type="number" id="input1" name="input1" value="0">
+    <span id="monthYear" class="month-year"></span>
 
-    <br>
-
-    <label for="input2">Input 2 (Integer for numbered cells):</label>
-
-    <input type="number" id="input2" name="input2" value="1">
-
-    <br><br>
+    <input type="button" value="Next Month" onclick="nextMonth()">
 
     <input type="button" value="Generate Calendar" onclick="generateCalendar()">
 
@@ -99,56 +96,184 @@
 
 </table>
 
-
 <script>
 
-var this_year_is={{this_year_is|safe}};
+const monthDictionary= {
 
-var num_blank_days_this_month={{num_blank_days_this_month|safe}};
-var num_days_in_this_month={{num_days_in_this_month|safe}};
-var dates_in_this_month={{dates_in_this_month|safe}};
-var todays_index={{todays_index|safe}}
-var master_date_list={{master_date_list|safe}}
+    1: 'January',
 
+    2: 'February',
 
-var today_is={{today_is|safe}};
-console.log(today_is);
+    3: 'March',
 
+    4: 'April',
+
+    5: 'May',
+
+    6: 'June',
+
+    7: 'July',
+
+    8: 'August',
+
+    9: 'September',
+
+    10: 'October',
+
+    11: 'November',
+
+    12: 'December'
+
+};
+
+const dayDictionary = {
+
+    0: 'Monday',
+
+    1: 'Tuesday',
+
+    2: 'Wednesday',
+
+    3: 'Thursday',
+
+    4: 'Friday',
+
+    5: 'Saturday',
+
+    6: 'Sunday'
+
+};
+
+let lastYear = new Date().getFullYear() - 1;
+
+let year = new Date().getFullYear();
+
+let currentMonthIndex = new Date().getMonth(); // Set to current month index
+
+let blankDays = [];
+
+let numDaysInMonth = [];
+
+let correlatingYear = [];
+
+let strMonth = [];
+
+let datesListList = [];
+
+// Call the function to calculate month data
+
+calculateMonthData();
+generateCalendar();
+
+// Function to calculate month-related data
+
+function calculateMonthData() {
+
+    blankDays = [];
+
+    numDaysInMonth = [];
+
+    correlatingYear = [];
+
+    strMonth = [];
+
+    datesListList = [];
+
+    for (let i = 0; i < 12; i++) { // Start from 0 to match month index
+
+        const monthInfo = new Date(lastYear, i + 1, 0); // Increment month by 1
+
+        const blankDaysCount = new Date(lastYear, i, 1).getDay();
+
+        const numDays = monthInfo.getDate();
+
+        blankDays.push(blankDaysCount);
+
+        numDaysInMonth.push(numDays);
+
+        correlatingYear.push(lastYear);
+
+        strMonth.push(monthDictionary[i + 1]); // Increment month by 1
+
+        const datesList = [];
+
+        for (let day = 1; day <= numDays; day++) {
+
+            const date = new Date(lastYear, i, day); // Increment month by 1
+
+            const dateString = date.toISOString().split('T')[0];
+
+            datesList.push(dateString);
+
+        }
+
+        datesListList.push(datesList);
+
+    }
+
+}
+
+function previousMonth() {
+
+    currentMonthIndex--;
+
+    if (currentMonthIndex < 0) {
+
+        currentMonthIndex = 11;
+
+        lastYear--;
+
+    }
+
+    generateCalendar();
+
+}
+
+function nextMonth() {
+
+    currentMonthIndex++;
+
+    if (currentMonthIndex > 11) {
+
+        currentMonthIndex = 0;
+
+        lastYear++;
+
+    }
+
+    generateCalendar();
+
+}
 
 function generateCalendar() {
 
+    const numRows = Math.ceil((blankDays[currentMonthIndex] + numDaysInMonth[currentMonthIndex]) / 7);
 
-    var input1 = parseInt(document.getElementById('input1').value);
-
-    var input2 = parseInt(document.getElementById('input2').value);
-
-    var totalCells = input1 + input2;
-
-    var numRows = Math.ceil(totalCells / 7);
-
-    var tableBody = document.querySelector('#calendarTable tbody');
+    const tableBody = document.querySelector('#calendarTable tbody');
 
     tableBody.innerHTML = '';
 
+    let cellNum = 1 - blankDays[currentMonthIndex];
 
+    document.getElementById('monthYear').textContent = `${strMonth[currentMonthIndex]} ${lastYear}`;
 
-    for (var i = 0; i < numRows; i++) {
+    for (let i = 0; i < numRows; i++) {
 
-        var row = document.createElement('tr');
+        const row = document.createElement('tr');
 
-        for (var j = 0; j < 7; j++) {
+        for (let j = 0; j < 7; j++) {
 
-            var cellNum = (i * 7) + j + 1 - input1;
+            const cell = document.createElement('td');
 
-            var cell = document.createElement('td');
-
-            if (cellNum > 0 && cellNum <= input2) {
+            if (cellNum > 0 && cellNum <= numDaysInMonth[currentMonthIndex]) {
 
                 cell.textContent = cellNum;
 
             }
 
             row.appendChild(cell);
+
+            cellNum++;
 
         }
 
@@ -158,13 +283,9 @@ function generateCalendar() {
 
 }
 
-
-
-
 </script>
-
-
 
 </body>
 
 </html>
+
