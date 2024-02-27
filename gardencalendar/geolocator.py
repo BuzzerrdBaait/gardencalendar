@@ -39,7 +39,6 @@ def geocode(zip_code,country):
 
         if data:
             
-
             location = data[0]
             display_name= location['display_name']
 

@@ -3,19 +3,12 @@
 <html lang="en">
 
 <head>
-     {% load static %}
 
 <meta charset="UTF-8">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>Dynamic Calendar</title>
-
-
-
-{{month_info}}
-
-
 
 <style>
 
@@ -45,8 +38,6 @@
 
 
 
-
-
 <form>
 
     <label for="input1">Input 1 (Number of blank cells):</label>
@@ -65,9 +56,7 @@
 
 </form>
 
-{{todays_index}}
 
-{{today_is}}
 
 <table id="calendarTable">
 
@@ -75,19 +64,19 @@
 
         <tr>
 
-            <th>Monday</th>
+            <th>Column 1</th>
 
-            <th>Tuesday</th>
+            <th>Column 2</th>
 
-            <th>Wednesday</th>
+            <th>Column 3</th>
 
-            <th>Thursday</th>
+            <th>Column 4</th>
 
-            <th>Friday</th>
+            <th>Column 5</th>
 
-            <th>Saturday</th>
+            <th>Column 6</th>
 
-            <th>Sunday</th>
+            <th>Column 7</th>
 
         </tr>
 
@@ -95,28 +84,17 @@
 
     <tbody>
 
+        <!-- Calendar cells will be generated here -->
+
     </tbody>
 
 </table>
 
 
+
 <script>
 
-var this_year_is={{this_year_is|safe}};
-
-var num_blank_days_this_month={{num_blank_days_this_month|safe}};
-var num_days_in_this_month={{num_days_in_this_month|safe}};
-var dates_in_this_month={{dates_in_this_month|safe}};
-var todays_index={{todays_index|safe}}
-var master_date_list={{master_date_list|safe}}
-
-
-var today_is={{today_is|safe}};
-console.log(today_is);
-
-
 function generateCalendar() {
-
 
     var input1 = parseInt(document.getElementById('input1').value);
 
@@ -157,9 +135,6 @@ function generateCalendar() {
     }
 
 }
-
-
-
 
 </script>
 
