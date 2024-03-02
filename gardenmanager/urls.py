@@ -17,10 +17,7 @@ urlpatterns = [
 
     path("", include("gardencalendar.urls")),
 
-
     path('admin/', admin.site.urls),
-
-    
 
     path('accounts/', include('django.contrib.auth.urls')),
 
@@ -33,6 +30,8 @@ urlpatterns = [
     path('reset/done/', auth_views.PasswordResetCompleteView.as_view(), name='password_reset_complete'),
 
     path('logout', auth_views.LogoutView.as_view(), name='logout'),
+
+
 
 
     

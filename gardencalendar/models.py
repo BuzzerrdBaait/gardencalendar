@@ -20,6 +20,7 @@ from .geolocator import geocode
 
 
 
+
 class User_Profile(AbstractUser):
 
     email = models.CharField(max_length=40, blank=True, null=True, unique=True)

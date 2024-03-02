@@ -79,6 +79,8 @@ COMPRESS_URL= CLOUDFRONT_URL                                       #
 
 
 INSTALLED_APPS = [
+    'djangobower',
+    'schedule',
     'gardencalendar',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -112,6 +114,7 @@ TEMPLATES = [
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
+                'django.template.context_processors.request',
                 'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
@@ -234,11 +237,30 @@ USE_I18N = True
 
 USE_TZ = True
 
+STATICFILES_FINDERS = [
 
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+
+    'Djangobower.finders.BowerFinder',
+
+]
 
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'gardencalendar', 'static','gardencalendar')]
 STATIC_ROOT = os.path.join(BASE_DIR, 'static', 'gardencalendar')
+
+
+BOWER_COMPONENTS_ROOT = os.path.join(BASE_DIR,'components')
+
+BOWER_INSTALLED_APPS = (
+    'jquery',
+    'jquery-ui',
+    'bootstrap'
+)
+
+print(f"Bower components root--->  {BOWER_COMPONENTS_ROOT}")
 
 STORAGES = {
     # Enable WhiteNoise's GZip and Brotli compression of static assets:
